@@ -6,10 +6,11 @@ const host="localhost:";
 const path = require('path');
 const qrcode =require('./qrcode.js');
 const encrypt =require("./encrypt.js");
+const db =require("./db");
 let date = new Date();
 let cDate =date.getDate()+"-"+ (date.getMonth()+1);
 let section="pm";
-        if(date.getHours<17){
+        if(date.getHours()<17){
             section="am"
         }
 let oriLink=host+port+"/input";
@@ -26,7 +27,7 @@ fs.writeFile(path.join(__dirname,"/pub/link.txt"),link, err => {
 
 
 
-// console.log(cDate);
+
     app.use(express.static(__dirname+'/pub'));
 //generating qr code for staff
     app.get('/',(res)=>{
@@ -36,44 +37,42 @@ fs.writeFile(path.join(__dirname,"/pub/link.txt"),link, err => {
     });
 //page for personnel to input credentials
     app.get("/input"+sectdate,(req,res)=>{
-        res.sendFile(path.join(__dirname,"/pub/"+section+".html"))
+        res.sendFile(path.join(__dirname,"/pub/"+section+".html"));
     });
 
     app.get("/result",(req,res)=>{
       res.send("Submission succesful")
 
       let info={
-      name: req.body.name,
-      department: req.body.department,
-      rtime: date.getTime(),
-      rdate: cDate,
-      sect: section
+      name: "req.body.name",
+      department: "req.body.department",
+      rtime: "date.getTime()",
+      rdate: "cDate",
+      sect: "section"
      }
-     let json= JSON.parse(info);
      fs.appendFile("./data.json",JSON.stringify(json)); 
     });
 // login page for setting up personnels
-    app.get("/setuplogin"+sectdate,(req,res)=>{
-      res.send("setup login")
-      if(req.body.name=="root"&req.body.password=="root"){
-        res.redirect("/setup");
+    app.get("/setuplogin",(req,res)=>{
+      res.sendFile(path.join(__dirname,"/pub/setupLogin.html"));
+     
+    });
+    app.post("./login",(req,next)=>{
+          console.log(req.body.name);
+          if(req.body.name=="root"&req.body.password=="root"){
+        next()
       }
-
-      
-    });
-// page for setting up personnels on system
-    app.get("/setup",(res,req)=>{
-      let info={
-        name: req.body.name,
-        department: req.body.department,
-        rtime: date.getTime(),
-        rdate: cDate,
-        sect: section
-       }
-       let json= JSON.parse(info);
-       fs.appendFile("./data.json",JSON.stringify(json)); 
-    });
-
+    },(res)=>{
+      // page for setting up personnels on system
+                res.send("setup a personnel");
+                /* let info={
+                  name: req.body.name,
+                  department: req.body.department,
+                 }
+                 let json= JSON.parse(info);
+                 fs.appendFile("./data.json",JSON.stringify(json)); */ 
+                });
+    
     app.get("*", function(req, res){
         res.status(404).send("Session expired");
   });
