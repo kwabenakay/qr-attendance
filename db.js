@@ -1,6 +1,6 @@
 const sqlite3 =require("sqlite3").verbose();
 const path = require("path");
-const data = require("./data.json");
+const data = require("./pub/data.json");
 const dbName=data.currentDb;//will be set current db name in data.json file
 let db= new sqlite3.Database("./db/"+dbName+".db");
 let date = new Date();
@@ -50,10 +50,14 @@ function setup(year){
     db.serialize(()=>{
         db.run("create table if not exists staff (name text, department text);");
     });
+    //cleaning the current staff obj for new staff
+    data.currentStaff.length=0;
 
     
 }
 // populate db with new staff
 function dbsetup(name,department){
     db.serialize(()=>{db.run("INSERT INTO staff (name,department) VALUES("+name+","+department+");")});
+    //adding new entries to the staff obj
+    data.currentStaff.push({"name": name,"department":department});
 }

@@ -1,5 +1,6 @@
 const express= require('express');
 const  fs = require('fs');
+const bodyParser = require("body-parser")
 const app = express();
 const port = 5000;
 const host="localhost:";
@@ -7,6 +8,7 @@ const path = require('path');
 const qrcode =require('./qrcode.js');
 const encrypt =require("./encrypt.js");
 const db =require("./db");
+const data =require("./pub/data.json");
 let date = new Date();
 let cDate =date.getDate()+"-"+ (date.getMonth()+1);
 let section="pm";
@@ -24,8 +26,7 @@ fs.writeFile(path.join(__dirname,"/pub/link.txt"),link, err => {
       console.error(err);
     }
   });
-
-
+  app.use(bodyParser.urlencoded({ extended: true }))
 
 
     app.use(express.static(__dirname+'/pub'));
@@ -39,7 +40,9 @@ fs.writeFile(path.join(__dirname,"/pub/link.txt"),link, err => {
     app.get("/input"+sectdate,(req,res)=>{
         res.sendFile(path.join(__dirname,"/pub/"+section+".html"));
     });
-
+    app.get("/data",(res)=>{
+      res.json(data);
+    });
     app.get("/result",(req,res)=>{
       res.send("Submission succesful")
 
@@ -57,21 +60,19 @@ fs.writeFile(path.join(__dirname,"/pub/link.txt"),link, err => {
       res.sendFile(path.join(__dirname,"/pub/setupLogin.html"));
      
     });
-    app.post("./login",(req,next)=>{
-          console.log(req.body.name);
-          if(req.body.name=="root"&req.body.password=="root"){
-        next()
-      }
-    },(res)=>{
+    app.get("/login",(req,res)=>{
+          if(req.query.name=="root"& req.query.password=="root"){
+            
       // page for setting up personnels on system
-                res.send("setup a personnel");
-                /* let info={
-                  name: req.body.name,
-                  department: req.body.department,
-                 }
-                 let json= JSON.parse(info);
-                 fs.appendFile("./data.json",JSON.stringify(json)); */ 
-                });
+      res.send("setup a personnel");
+      /* let info={
+        name: req.body.name,
+        department: req.body.department,
+       }
+       let json= JSON.parse(info);
+       fs.appendFile("./data.json",JSON.stringify(json)); */
+      }
+    });
     
     app.get("*", function(req, res){
         res.status(404).send("Session expired");
